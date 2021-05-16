@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "nominate"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "nominate"
+  template:
+    metadata:
+      labels:
+        app: "nominate"
+    spec:
+      containers:
+        - name: "nominate"
+          image: "registry.cloud.okteto.net/next-speaker/nominate"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "nominate"
+spec:
+  selector:
+    app: "nominate"
+  type: LoadBalancer
+  ports:
+    - protocol: "TCP"
+      port: 8080
